@@ -1,0 +1,418 @@
+/* =============================================================================
+ *  Industries We Serve — pinned R3F depth gallery.
+ *
+ *  Layout
+ *  ──────
+ *    .wrap      — the scroll trigger (height = TOTAL × 100vh, pin spacing)
+ *    .section   — pinned 100vh container (background colour is set inline so
+ *                  it always matches the current mood even before the canvas
+ *                  has rendered its first frame)
+ *    .canvas    — absolute-fill <Canvas>
+ *    .overlay   — pointer-events: none HTML chrome floating over the gallery
+ *
+ *  Text always reads as white because every mood colour in INDUSTRIES is dark.
+ * ============================================================================*/
+
+.wrap {
+  position: relative;
+}
+
+.section {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background-color: #fffaf0;
+  /* Text colour palette driven by [data-tone]. Each token resolves to a
+     contrast-correct value so the overlay reads cleanly over both the cream
+     backgrounds (PMS 135/4985) and the saturated ones (Afterglow/Cobalt/Meadow). */
+  --ind-text: #f4f4f4;
+  --ind-text-muted: rgba(244, 244, 244, 0.72);
+  --ind-text-soft: rgba(244, 244, 244, 0.45);
+  --ind-divider: rgba(244, 244, 244, 0.22);
+  --ind-shadow: rgba(0, 0, 0, 0.35);
+  --ind-stroke: rgba(244, 244, 244, 0.22);
+  color: var(--ind-text);
+  isolation: isolate;
+  transition: background-color 0.6s ease;
+}
+
+.section[data-tone="dark"] {
+  --ind-text: #2e2e2e;
+  --ind-text-muted: rgba(46, 46, 46, 0.72);
+  --ind-text-soft: rgba(46, 46, 46, 0.45);
+  --ind-divider: rgba(46, 46, 46, 0.18);
+  --ind-shadow: rgba(255, 255, 255, 0.45);
+  --ind-stroke: rgba(46, 46, 46, 0.22);
+}
+
+.canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.canvas > div {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  padding: 28px 32px 32px;
+  pointer-events: none;
+  font-family: var(--font-inter), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  color: var(--ind-text);
+  /* Drop-shadows stay subtle and tone-aware. */
+  text-shadow: 0 2px 18px var(--ind-shadow);
+  transition: color 0.5s ease;
+}
+
+.section[data-tone="dark"] .overlay {
+  text-shadow: none;
+}
+
+/* ───────────── top bar ───────────── */
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ind-text-muted);
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.eyebrowDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ind-text);
+  box-shadow: 0 0 0 4px var(--ind-stroke);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 4px var(--ind-stroke);
+  }
+  50% {
+    box-shadow: 0 0 0 8px transparent;
+  }
+}
+
+.counter {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ind-text);
+}
+
+.counterDivider {
+  opacity: 0.5;
+}
+
+/* ───────────── big editorial heading ───────────── */
+
+.heading {
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  line-height: 0.88;
+  margin-bottom: clamp(20px, 4vh, 56px);
+  padding-bottom: 0;
+}
+
+.headingTop {
+  display: inline-block;
+  font-family: var(--font-syne), var(--font-inter), system-ui, sans-serif;
+  font-weight: 500;
+  font-style: italic;
+  font-size: clamp(18px, 2.6vw, 30px);
+  letter-spacing: 0;
+  color: var(--ind-text-muted);
+}
+
+.headingBig {
+  position: relative;
+  display: inline-block;
+  font-family: var(--font-syne), var(--font-inter), system-ui, sans-serif;
+  font-weight: 800;
+  font-size: clamp(70px, 14vw, 220px);
+  letter-spacing: -0.04em;
+  color: var(--ind-text);
+  margin-top: -0.05em;
+}
+
+.headingFill,
+.headingStroke {
+  display: block;
+  line-height: 0.88;
+}
+
+/* Light tone — bright fill gradient like the original. */
+.headingFill {
+  background: linear-gradient(
+    180deg,
+    var(--ind-text) 0%,
+    var(--ind-text-muted) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.headingStroke {
+  position: absolute;
+  inset: 0;
+  -webkit-text-stroke: 1px var(--ind-stroke);
+  color: transparent;
+  transform: translate(6px, 6px);
+  pointer-events: none;
+}
+
+/* ───────────── per-industry label (animated swap) ───────────── */
+
+.label {
+  grid-row: 3;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 16px;
+  row-gap: 2px;
+  align-items: baseline;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--ind-divider);
+}
+
+.labelCode {
+  grid-column: 1;
+  grid-row: 1 / 3;
+  align-self: end;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ind-text-muted);
+  font-variant-numeric: tabular-nums;
+  padding-bottom: 6px;
+}
+
+.labelName {
+  grid-column: 2;
+  grid-row: 1;
+  margin: 0;
+  font-family: var(--font-syne), var(--font-inter), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: clamp(32px, 4.6vw, 60px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--ind-text);
+  animation: labelIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes labelIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+.labelSector {
+  grid-column: 2;
+  grid-row: 2;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ind-text-muted);
+}
+
+/* ───────────── progress dots + scroll hint ───────────── */
+
+.dots {
+  grid-row: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+}
+
+.dot {
+  width: 24px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--ind-text-soft);
+  transition: background 0.45s ease, width 0.45s ease;
+}
+
+.dot[data-active="true"] {
+  width: 40px;
+  background: var(--ind-text);
+}
+
+.scrollHint {
+  position: absolute;
+  right: 32px;
+  bottom: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--ind-text-soft);
+}
+
+.scrollLine {
+  display: inline-block;
+  width: 32px;
+  height: 1px;
+  background: var(--ind-text-soft);
+  position: relative;
+  overflow: hidden;
+}
+
+.scrollLine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--ind-text);
+  transform: translateX(-100%);
+  animation: scrollLine 1.8s ease-in-out infinite;
+}
+
+@keyframes scrollLine {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* =============================================================================
+ *  RESPONSIVE
+ * ===========================================================================*/
+
+/* Tablet — soften the heading + tighten paddings */
+@media (max-width: 1023px) {
+  .overlay {
+    padding: 22px 24px 24px;
+  }
+  .headingBig {
+    font-size: clamp(60px, 16vw, 140px);
+  }
+  .headingStroke {
+    transform: translate(4px, 4px);
+  }
+  .scrollHint {
+    right: 24px;
+    bottom: 24px;
+  }
+}
+
+/* Phones — collapse to a single-column compact layout */
+@media (max-width: 640px) {
+  .overlay {
+    padding: 18px 18px 22px;
+    grid-template-rows: auto 1fr auto auto;
+  }
+
+  .topbar {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+  }
+  .eyebrowDot {
+    width: 6px;
+    height: 6px;
+  }
+
+  .heading {
+    margin-bottom: 14px;
+  }
+  .headingTop {
+    font-size: clamp(14px, 4vw, 18px);
+  }
+  .headingBig {
+    font-size: clamp(54px, 16vw, 96px);
+    letter-spacing: -0.045em;
+  }
+  .headingStroke {
+    transform: translate(3px, 3px);
+  }
+
+  .label {
+    grid-template-columns: 1fr auto;
+    column-gap: 10px;
+    padding-bottom: 12px;
+  }
+  .labelCode {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: start;
+    padding-bottom: 0;
+    font-size: 9px;
+  }
+  .labelName {
+    grid-column: 1 / 3;
+    grid-row: 2;
+    font-size: clamp(28px, 8.5vw, 44px);
+  }
+  .labelSector {
+    grid-column: 1 / 3;
+    grid-row: 3;
+    font-size: 10px;
+  }
+
+  .dots {
+    gap: 6px;
+    margin-top: 12px;
+  }
+  .dot {
+    width: 18px;
+  }
+  .dot[data-active="true"] {
+    width: 30px;
+  }
+
+  .scrollHint {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eyebrowDot,
+  .scrollLine::after,
+  .labelName {
+    animation: none !important;
+  }
+  .dot {
+    transition: none !important;
+  }
+}

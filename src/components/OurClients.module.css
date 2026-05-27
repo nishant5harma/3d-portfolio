@@ -1,0 +1,600 @@
+/* =============================================================================
+ * Our Clients — scroll-pinned showcase with big editorial heading + laptop
+ * mockup carousel.
+ *
+ * `.wrap` is the ScrollTrigger trigger; `.slider` is pinned at 100vh while the
+ * user scrolls every client card. Fully responsive — heading and laptop scale
+ * with viewport units and reflow stacked on mobile.
+ * ============================================================================*/
+
+.wrap {
+  position: relative;
+}
+
+.slider {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background-color: #6b5b50;
+  color: #fff;
+  font-family: var(--font-inter), "Instrument Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  isolation: isolate;
+}
+
+/* Subtle film grain so flat brand colours don't look plasticky */
+.grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.08;
+  mix-blend-mode: overlay;
+  background-image: radial-gradient(
+      rgba(255, 255, 255, 0.5) 1px,
+      transparent 1px
+    ),
+    radial-gradient(rgba(0, 0, 0, 0.35) 1px, transparent 1px);
+  background-size: 3px 3px, 5px 5px;
+  background-position: 0 0, 1px 2px;
+  z-index: 1;
+}
+
+/* ---------- top bar ---------- */
+.topbar {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 24px 0;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.eyebrowDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.18);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.18);
+  }
+  50% {
+    box-shadow: 0 0 0 7px rgba(255, 255, 255, 0.05);
+  }
+}
+
+.eyebrowMeta {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- giant editorial heading ---------- */
+.heading {
+  position: relative;
+  z-index: 3;
+  padding: clamp(8px, 2vh, 18px) 24px 0;
+  line-height: 0.9;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+}
+
+.headingTop {
+  display: inline-block;
+  font-family: var(--font-syne), var(--font-inter), system-ui, sans-serif;
+  font-weight: 500;
+  font-style: italic;
+  font-size: clamp(20px, 3.4vw, 38px);
+  letter-spacing: -0.01em;
+  color: rgba(255, 255, 255, 0.85);
+  padding-left: 4px;
+}
+
+.headingBig {
+  position: relative;
+  display: inline-block;
+  font-family: var(--font-syne), var(--font-inter), system-ui, sans-serif;
+  font-weight: 800;
+  font-size: clamp(58px, 13vw, 200px);
+  letter-spacing: -0.04em;
+  color: #fff;
+  margin-top: -0.05em;
+}
+
+.headingFill,
+.headingStroke {
+  display: block;
+  line-height: 0.9;
+}
+
+.headingFill {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 1) 0%,
+    rgba(255, 255, 255, 0.55) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Outline ghost layered behind the fill for extra editorial weight */
+.headingStroke {
+  position: absolute;
+  inset: 0;
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.25);
+  color: transparent;
+  transform: translate(6px, 6px);
+  pointer-events: none;
+}
+
+/* ---------- body ---------- */
+.body {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: clamp(12px, 2vh, 24px) 24px clamp(20px, 4vh, 40px);
+}
+
+.left {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.currentBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.currentLabel {
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.title {
+  position: relative;
+  font-family: var(--font-syne), var(--font-inter), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: clamp(28px, 6vw, 56px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: #fff;
+  margin: 0;
+  overflow: hidden;
+}
+
+.title span {
+  display: inline-block;
+  will-change: transform;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+.dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.dot {
+  width: 22px;
+  height: 2px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.25);
+  transition: background 0.45s ease, width 0.45s ease;
+}
+
+.dot[data-active="true"] {
+  width: 36px;
+  background: #fff;
+}
+
+.counter {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: rgba(255, 255, 255, 0.65);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- right: laptop mockup ---------- */
+.right {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 2200px;
+}
+
+.laptop {
+  position: relative;
+  width: min(100%, 620px);
+  transform: rotateX(2deg);
+  transform-origin: 50% 80%;
+  filter: drop-shadow(0 30px 60px rgba(0, 0, 0, 0.35));
+}
+
+.laptopScreen {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  background: #0a0a0a;
+  border-radius: 14px 14px 6px 6px;
+  padding: 14px 14px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 1px 0 rgba(255, 255, 255, 0.12) inset;
+}
+
+.laptopBezel {
+  position: relative;
+  width: 100%;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 6px;
+}
+
+.notch {
+  width: 60px;
+  height: 5px;
+  border-radius: 0 0 6px 6px;
+  background: #050505;
+}
+
+.laptopViewport {
+  position: relative;
+  width: 100%;
+  height: calc(100% - 20px);
+  border-radius: 4px;
+  overflow: hidden;
+  background: #000;
+  isolation: isolate;
+}
+
+.images {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.slide {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 78%;
+  aspect-ratio: 1.5;
+  overflow: hidden;
+  border-radius: 6px;
+  will-change: transform, filter, opacity;
+  contain: layout style;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+}
+
+.slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.92) saturate(1.05);
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Laptop base / hinge */
+.laptopBase {
+  position: relative;
+  width: 112%;
+  left: -6%;
+  height: 14px;
+  margin-top: -2px;
+  background: linear-gradient(
+    180deg,
+    #1a1a1a 0%,
+    #2a2a2a 30%,
+    #0a0a0a 100%
+  );
+  border-radius: 0 0 14px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: none;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.laptopHinge {
+  width: 30%;
+  height: 4px;
+  margin-top: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.5) 0%,
+    rgba(0, 0, 0, 0.15) 100%
+  );
+  border-radius: 0 0 8px 8px;
+}
+
+.laptopShadow {
+  position: absolute;
+  left: 50%;
+  bottom: -28px;
+  transform: translateX(-50%);
+  width: 80%;
+  height: 36px;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, 0.45) 0%,
+    rgba(0, 0, 0, 0) 70%
+  );
+  filter: blur(8px);
+  pointer-events: none;
+}
+
+/* =============================================================================
+ *  RESPONSIVE BREAKPOINTS
+ * ===========================================================================*/
+
+/* =============================================================================
+ *  PHONES — the laptop chrome morphs into a phone mockup that fills the full
+ *  available column height. Heading collapses to one inline line so the
+ *  device can dominate the viewport.
+ * ===========================================================================*/
+@media (max-width: 640px) {
+  /* Trim every wrapper so the phone column can grow as tall as possible. */
+  .topbar {
+    padding: 10px 16px 0;
+    font-size: 9px;
+  }
+
+  .heading {
+    flex-direction: row;
+    align-items: baseline;
+    /* Tight inline "Our Clients" — no breathing room between the italic
+       prefix and the bold word. */
+    gap: 4px;
+    padding: 0 16px;
+    margin-top: -2px;
+  }
+  .headingTop {
+    font-size: clamp(12px, 3.4vw, 16px);
+  }
+  .headingBig {
+    font-size: clamp(30px, 8.6vw, 46px);
+    letter-spacing: -0.045em;
+  }
+  .headingStroke {
+    transform: translate(2px, 2px);
+  }
+
+  .body {
+    flex: 1;
+    min-height: 0;
+    gap: 6px;
+    /* Extra bottom padding lifts the meta row above the Next.js dev badge
+       (and any browser UI on touch devices) so the slide name never
+       overlaps anything in the lower-left corner. */
+    padding: 4px 16px 28px;
+  }
+
+  /* Phone first (order 1, flex: 1), then a slim meta row at the bottom.
+     We push the row off the very edges so the slide name is never flush
+     against the Next.js dev badge or browser chrome. */
+  .left {
+    order: 2;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+    padding: 0 4px;
+  }
+  /* The "Currently viewing" label is redundant once the big "Our Clients"
+     heading is already shouting — hide it on phones so the name has room. */
+  .currentLabel {
+    display: none;
+  }
+  .currentBlock {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+  .title {
+    font-size: clamp(20px, 5.4vw, 28px);
+    white-space: nowrap;
+    letter-spacing: -0.01em;
+  }
+  .meta {
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .dot {
+    width: 14px;
+    height: 2px;
+  }
+  .dot[data-active="true"] {
+    width: 22px;
+  }
+  .counter {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+  }
+
+  .right {
+    order: 1;
+    flex: 1 1 0;
+    min-height: 0;
+    width: 100%;
+    perspective: 1400px;
+  }
+
+  /* ------- Laptop → Phone shape ------- */
+  .laptop {
+    width: auto;
+    height: 100%;
+    /* Cap the phone height so it doesn't fill the whole column — leaves
+       breathing room above/below and keeps the device noticeably smaller. */
+    max-height: min(100%, 70vh);
+    aspect-ratio: 9 / 19.5;
+    max-width: 68vw;
+    transform: rotateX(0);
+    filter: drop-shadow(0 22px 48px rgba(0, 0, 0, 0.45));
+  }
+
+  .laptopScreen {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+    padding: 10px;
+    border-radius: 36px;
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+      0 0 0 1.5px rgba(255, 255, 255, 0.1);
+  }
+
+  .laptopBezel {
+    height: 24px;
+    margin-bottom: 6px;
+  }
+
+  /* Dynamic-island style notch */
+  .notch {
+    width: 92px;
+    height: 22px;
+    border-radius: 14px;
+    background: #050505;
+  }
+
+  .laptopViewport {
+    height: calc(100% - 30px);
+    border-radius: 26px;
+  }
+
+  /* Laptop-only chrome — hidden in phone mode */
+  .laptopBase,
+  .laptopShadow {
+    display: none;
+  }
+
+  /* Portrait crops so slides look like phone screenshots */
+  .slide {
+    width: 92%;
+    aspect-ratio: 0.62;
+    border-radius: 14px;
+  }
+}
+
+/* Tablet and up — laptop a touch bigger, eyebrow tightens */
+@media (min-width: 641px) {
+  .topbar {
+    padding: 28px 40px 0;
+  }
+  .heading {
+    padding: 12px 40px 0;
+  }
+  .body {
+    padding: 18px 40px 40px;
+  }
+}
+
+/* Desktop — heading lives on the left, laptop on the right, side-by-side */
+@media (min-width: 1024px) {
+  .topbar {
+    padding: 32px 56px 0;
+  }
+  .heading {
+    padding: clamp(20px, 4vh, 60px) 56px 0;
+  }
+  .body {
+    flex-direction: row;
+    align-items: stretch;
+    gap: 40px;
+    padding: 24px 56px 56px;
+  }
+  .left {
+    flex: 0 0 auto;
+    width: 38%;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: stretch;
+    gap: 24px;
+  }
+  .currentBlock {
+    gap: 6px;
+  }
+  .title {
+    font-size: clamp(40px, 4.8vw, 68px);
+  }
+  .meta {
+    justify-content: flex-start;
+  }
+  .right {
+    flex: 1;
+  }
+  .laptop {
+    width: min(100%, 680px);
+  }
+}
+
+/* Ultra-wide — laptop can breathe more */
+@media (min-width: 1440px) {
+  .heading {
+    padding-top: clamp(20px, 4vh, 80px);
+  }
+  .laptop {
+    width: min(100%, 760px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slide,
+  .title span,
+  .dot,
+  .eyebrowDot {
+    will-change: auto;
+    animation: none !important;
+    transition: none !important;
+  }
+}

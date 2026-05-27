@@ -1,0 +1,502 @@
+/* =============================================================================
+ *  Tech We Use — vanilla three.js displacement-shader card grid.
+ *
+ *  Palette
+ *  ───────
+ *  Built around #B5A882 (warm khaki / linen) with lighter shades for the
+ *  background gradient. The section bridges sage-ending "Industries We Serve"
+ *  above and cream-yellow "Why Choose Us" below — keeping the whole stretch
+ *  in the same earth-tone family.
+ *
+ *  Heading
+ *  ───────
+ *  Re-uses the editorial layout from OurClients exactly: italic Syne 500
+ *  word on top, giant Syne 800 word below with a gradient fill + offset
+ *  stroke ghost. Just retoned for dark olive-brown ink on the light backdrop.
+ *
+ *  Layout (top → bottom)
+ *  ─────────────────────
+ *    .section (pinned, 100dvh, flex column)
+ *      ├── .auroraBg  — khaki blobs drifting under multiply
+ *      ├── .grain     — film-grain overlay (same as OurClients)
+ *      ├── .topbar    — eyebrow (dot + label) • page counter
+ *      ├── .heading   — Tech we / Use editorial layered title
+ *      ├── .stage     — flex:1 — vanilla three.js <canvas>
+ *      └── .bottombar — hint pill • indicator dots
+ * ============================================================================*/
+
+.wrap {
+  position: relative;
+}
+
+.section {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  color: var(--twu-ink);
+  font-family: var(--font-inter), Inter, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  isolation: isolate;
+  /* Lighter shades of #B5A882 across a vertical ramp: pale linen at the
+     very top (so the heading reads against a near-cream backdrop), settling
+     into base-khaki at the bottom where the indicator dots sit. */
+  background:
+    radial-gradient(
+      120% 80% at 50% 0%,
+      rgba(248, 242, 222, 0.85) 0%,
+      rgba(232, 224, 192, 0.35) 45%,
+      transparent 75%
+    ),
+    linear-gradient(180deg, #ede5cf 0%, #d8cfa9 55%, #c4ba90 100%);
+
+  /* Dark olive-brown ink — sits in the same family as #B5A882 but
+     dropped to ~12% lightness so it reads cleanly on the cream-khaki bg. */
+  --twu-ink: #2e2a1c;
+  --twu-ink-soft: #4a4530;
+  --twu-muted: rgba(46, 42, 28, 0.65);
+  --twu-soft: rgba(46, 42, 28, 0.3);
+  --twu-line: rgba(46, 42, 28, 0.15);
+}
+
+/* Screen-reader heading — the visual .heading is decorative (aria-hidden),
+   so we keep an actual h2 for the a11y tree and SEO. */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ───────────── khaki aurora ───────────── */
+
+.auroraBg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: radial-gradient(
+    1100px 700px at 50% 45%,
+    rgba(248, 242, 222, 0.45),
+    transparent 70%
+  );
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(110px);
+  opacity: 0.55;
+  /* multiply darkens the cream wherever a blob sits, so #B5A882 and its
+     deeper relatives read as warm khaki vein-marks rather than the neon
+     glows we'd get on a dark base. */
+  mix-blend-mode: multiply;
+  will-change: transform;
+}
+
+.blob1 {
+  /* Anchor — the user-specified base khaki itself. */
+  width: 60vmax;
+  height: 60vmax;
+  background: #b5a882;
+  top: -22vmax;
+  left: -18vmax;
+  animation: twuBlobA 26s ease-in-out infinite;
+}
+.blob2 {
+  /* Lighter sibling. */
+  width: 55vmax;
+  height: 55vmax;
+  background: #c5b990;
+  top: -15vmax;
+  right: -20vmax;
+  animation: twuBlobB 32s ease-in-out infinite;
+}
+.blob3 {
+  /* Deeper olive — adds tonal range without leaving the family. */
+  width: 50vmax;
+  height: 50vmax;
+  background: #8d8163;
+  bottom: -20vmax;
+  left: 15vmax;
+  animation: twuBlobC 36s ease-in-out infinite;
+}
+.blob4 {
+  /* Warmer khaki, slightly toward sand. */
+  width: 55vmax;
+  height: 55vmax;
+  background: #a89972;
+  bottom: -25vmax;
+  right: -15vmax;
+  animation: twuBlobD 30s ease-in-out infinite;
+}
+
+@keyframes twuBlobA {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(22vmax, 18vmax) scale(1.15); }
+}
+@keyframes twuBlobB {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(-25vmax, 22vmax) scale(0.9); }
+}
+@keyframes twuBlobC {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(-15vmax, -22vmax) scale(1.25); }
+}
+@keyframes twuBlobD {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(-22vmax, -16vmax) scale(1.05); }
+}
+
+/* Film grain — mirrors OurClients' .grain so both sections share the same
+   tactile paper feel. */
+.grain {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.07;
+  mix-blend-mode: overlay;
+  background-image:
+    radial-gradient(rgba(255, 255, 255, 0.5) 1px, transparent 1px),
+    radial-gradient(rgba(46, 42, 28, 0.35) 1px, transparent 1px);
+  background-size: 3px 3px, 5px 5px;
+  background-position: 0 0, 1px 2px;
+}
+
+/* ───────────── top bar (eyebrow + counter) ───────────── */
+
+.topbar {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* Trimmed top padding from 24px → 16px so the heading row sits closer
+     to the section top and the stage absorbs the saved pixels. */
+  padding: 16px clamp(20px, 4vw, 48px) 0;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--twu-muted);
+  flex-shrink: 0;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.eyebrowDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--twu-ink);
+  box-shadow: 0 0 0 4px rgba(46, 42, 28, 0.18);
+  animation: twuPulse 2s ease-in-out infinite;
+}
+
+@keyframes twuPulse {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(46, 42, 28, 0.18); }
+  50%      { box-shadow: 0 0 0 7px rgba(46, 42, 28, 0.05); }
+}
+
+.counter {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+  color: var(--twu-ink);
+}
+
+.counterCurrent {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.counterSep {
+  opacity: 0.45;
+}
+
+/* ───────────── editorial heading (matches OurClients) ───────────── */
+
+.heading {
+  position: relative;
+  z-index: 3;
+  /* Tightened from clamp(8px, 2vh, 18px) so the heading row eats less of
+     the section's vertical budget — the stage gains those pixels and the
+     cards get a noticeably bigger share of the viewport. */
+  padding: clamp(4px, 1.2vh, 10px) clamp(20px, 4vw, 48px) 0;
+  line-height: 0.9;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.headingTop {
+  display: inline-block;
+  font-family: var(--font-syne), var(--font-inter), system-ui, sans-serif;
+  font-weight: 500;
+  font-style: italic;
+  font-size: clamp(16px, 2.4vw, 28px);
+  letter-spacing: -0.01em;
+  color: rgba(46, 42, 28, 0.85);
+  padding-left: 4px;
+}
+
+.headingBig {
+  position: relative;
+  display: inline-block;
+  font-family: var(--font-syne), var(--font-inter), system-ui, sans-serif;
+  font-weight: 800;
+  /* Reduced from clamp(50px, 11vw, 150px) so the editorial title still
+     reads commanding without dominating the viewport — gives the 4×2
+     card grid roughly +60px of vertical room on a typical laptop. */
+  font-size: clamp(42px, 8.5vw, 112px);
+  letter-spacing: -0.04em;
+  color: var(--twu-ink);
+  margin-top: -0.05em;
+}
+
+.headingFill,
+.headingStroke {
+  display: block;
+  line-height: 0.9;
+}
+
+.headingFill {
+  background: linear-gradient(
+    180deg,
+    var(--twu-ink) 0%,
+    rgba(46, 42, 28, 0.55) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.headingStroke {
+  position: absolute;
+  inset: 0;
+  -webkit-text-stroke: 1px rgba(46, 42, 28, 0.25);
+  color: transparent;
+  transform: translate(6px, 6px);
+  pointer-events: none;
+}
+
+/* ───────────── stage (three.js canvas) ───────────── */
+
+.stage {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  min-height: 0;
+  /* Cards live inside 80% of the viewport width — leaves a calm 10% khaki
+     gutter on either side so the dark tiles read as a contained "shelf"
+     against the linen backdrop instead of bleeding edge-to-edge. The
+     ResizeObserver in TechWeUse.tsx feeds the new clientWidth into the
+     camera-fit math, so the per-card aspect stays correct automatically. */
+  width: 80%;
+  margin: 0 auto;
+}
+
+.canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 60px;
+  height: 60px;
+  margin: -30px 0 0 -30px;
+  border: 2px dashed rgba(46, 42, 28, 0.55);
+  border-radius: 50%;
+  z-index: 5;
+  animation: twuSpin 4s linear infinite;
+}
+
+@keyframes twuSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ───────────── bottom bar (hint + indicators) ───────────── */
+
+.bottombar {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  /* Tightened from clamp(14, 2.5vh, 28) — the hint pill + indicator row
+     only needs ~70px total; anything extra was eating stage height. */
+  padding: clamp(8px, 1.6vh, 18px) 24px 16px;
+  pointer-events: none;
+  flex-shrink: 0;
+  background: linear-gradient(
+    0deg,
+    rgba(196, 186, 144, 0.85) 0%,
+    rgba(196, 186, 144, 0.35) 55%,
+    rgba(196, 186, 144, 0) 100%
+  );
+}
+
+.hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  border: 1px solid var(--twu-line);
+  border-radius: 999px;
+  background: rgba(255, 250, 235, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--twu-muted);
+  font-weight: 500;
+}
+
+.hintArrow {
+  display: inline-block;
+  color: var(--twu-ink);
+  opacity: 0.85;
+  animation: twuBob 1.8s ease-in-out infinite;
+}
+
+.hintArrow:last-child {
+  animation-delay: 0.9s;
+}
+
+@keyframes twuBob {
+  0%, 100% { transform: translateY(0); opacity: 0.55; }
+  50%      { transform: translateY(-2px); opacity: 1; }
+}
+
+.indicators {
+  display: inline-flex;
+  gap: 10px;
+  pointer-events: auto;
+}
+
+.indicator {
+  width: 28px;
+  height: 4px;
+  border: 0;
+  padding: 0;
+  border-radius: 999px;
+  background: rgba(46, 42, 28, 0.22);
+  cursor: pointer;
+  transition: background-color 0.3s ease, width 0.3s ease;
+}
+
+.indicator:hover {
+  background: rgba(46, 42, 28, 0.45);
+}
+
+.indicatorActive {
+  background: var(--twu-ink);
+  width: 44px;
+}
+
+/* ───────────── responsive ───────────── */
+
+@media (max-width: 1023px) {
+  .topbar,
+  .heading,
+  .bottombar {
+    padding-left: 22px;
+    padding-right: 22px;
+  }
+  /* Tablets get a slightly looser gutter so the 4×2 grid still has room
+     for the icons to breathe at the smaller widths. */
+  .stage {
+    width: 88%;
+  }
+  .headingBig {
+    font-size: clamp(56px, 13vw, 120px);
+  }
+  .headingStroke {
+    transform: translate(4px, 4px);
+  }
+}
+
+@media (max-width: 720px) {
+  .topbar {
+    padding: 18px 16px 0;
+    padding-top: max(18px, env(safe-area-inset-top));
+    font-size: 9px;
+    letter-spacing: 0.2em;
+  }
+  /* Phones: 80% is too tight when there are only 2 columns. Pull the
+     stage back out to ~94% so each card stays a comfortable hit area. */
+  .stage {
+    width: 94%;
+  }
+  .heading {
+    padding: 10px 16px 0;
+  }
+  .headingTop {
+    font-size: clamp(15px, 4.5vw, 20px);
+  }
+  .headingBig {
+    font-size: clamp(46px, 14vw, 84px);
+    letter-spacing: -0.045em;
+  }
+  .headingStroke {
+    transform: translate(3px, 3px);
+  }
+  .bottombar {
+    padding: 14px 16px 18px;
+    padding-bottom: max(18px, env(safe-area-inset-bottom));
+  }
+  .counterCurrent {
+    font-size: 12px;
+  }
+  .hint {
+    font-size: 10px;
+    padding: 7px 12px;
+    letter-spacing: 0.14em;
+  }
+  .indicator {
+    width: 22px;
+  }
+  .indicatorActive {
+    width: 34px;
+  }
+  .blob {
+    filter: blur(80px);
+    opacity: 0.5;
+  }
+}
+
+@media (max-width: 380px) {
+  .hintText {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blob,
+  .hintArrow,
+  .eyebrowDot {
+    animation: none !important;
+  }
+}
