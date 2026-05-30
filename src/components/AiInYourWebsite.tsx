@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { withBasePath } from "@/lib/basePath";
 import styles from "./AiInYourWebsite.module.css";
 
 /**
@@ -178,7 +179,7 @@ export default function AiInYourWebsite() {
       <video
         ref={videoRef}
         className={styles.video}
-        src="/ai-in-you-website.mp4"
+        src={withBasePath("/ai-in-you-website.mp4")}
         muted
         playsInline
         preload="auto"

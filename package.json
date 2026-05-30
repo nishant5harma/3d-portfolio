@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:gh": "NEXT_PUBLIC_BASE_PATH=/3d-portfolio next build",
+    "deploy:prod": "npm run build:gh && node scripts/deploy-prod.mjs",
     "start": "next start",
     "lint": "eslint"
   },
