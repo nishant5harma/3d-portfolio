@@ -361,6 +361,10 @@ type SceneHandles = {
   rebuild: (colsPerRow: number) => void;
   /** Fit the camera + resize the renderer when the container resizes. */
   resize: () => void;
+  /** Pause the render loop (call when off-screen — saves GPU + battery). */
+  pause: () => void;
+  /** Resume the render loop. */
+  resume: () => void;
   /** Tear everything down. */
   dispose: () => void;
 };
@@ -514,13 +518,27 @@ function createScene(
   }
 
   let raf = 0;
+  let running = true;
   function loop() {
+    if (!running) return;
     raf = requestAnimationFrame(loop);
     renderer.render(scene, camera);
   }
   loop();
 
+  function pause() {
+    if (!running) return;
+    running = false;
+    cancelAnimationFrame(raf);
+  }
+  function resume() {
+    if (running) return;
+    running = true;
+    loop();
+  }
+
   function dispose() {
+    running = false;
     cancelAnimationFrame(raf);
     for (const mesh of meshes) {
       scene.remove(mesh);
@@ -532,7 +550,7 @@ function createScene(
     renderer.dispose();
   }
 
-  return { applyPageFloat, rebuild, resize, dispose };
+  return { applyPageFloat, rebuild, resize, pause, resume, dispose };
 }
 
 /* ────────────────────────────────────────────────────────────────────────── */
@@ -621,6 +639,43 @@ export default function TechWeUse() {
   useEffect(() => {
     sceneRef.current?.rebuild(colsPerRow);
   }, [colsPerRow]);
+
+  // Pause the WebGL render loop when this section is fully off-screen or
+  // the tab is hidden. Saves significant battery + frees GPU for the
+  // currently-visible section (IndustriesWeServe also runs WebGL).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const wrap = wrapRef.current;
+    if (!wrap) return;
+
+    let intersecting = false;
+    let docVisible = !document.hidden;
+
+    const apply = () => {
+      if (intersecting && docVisible) sceneRef.current?.resume();
+      else sceneRef.current?.pause();
+    };
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        intersecting = entry.isIntersecting;
+        apply();
+      },
+      { rootMargin: "200px 0px" },
+    );
+    io.observe(wrap);
+
+    const onVis = () => {
+      docVisible = !document.hidden;
+      apply();
+    };
+    document.addEventListener("visibilitychange", onVis);
+
+    return () => {
+      io.disconnect();
+      document.removeEventListener("visibilitychange", onVis);
+    };
+  }, [texturesReady]);
 
   // Drive scroll progress → pageFloat via GSAP ScrollTrigger pin. This is the
   // adaptation of the prompt's custom wheel/touch engine for a multi-section

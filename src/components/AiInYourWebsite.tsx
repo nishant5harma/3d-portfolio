@@ -182,8 +182,9 @@ export default function AiInYourWebsite() {
         src={withBasePath("/ai-in-you-website.mp4")}
         muted
         playsInline
-        preload="auto"
-        // Keep it out of autoplay attention; we control playback via JS.
+        // `metadata` keeps the cost low until the section is actually
+        // visible; the GSAP setup upgrades to full preload on demand.
+        preload="metadata"
         autoPlay={false}
         loop={false}
         aria-hidden="true"

@@ -22,6 +22,7 @@
 
 # deploy
 .deploy-prod-tmp/
+.deploy-prod-worktree/
 
 # misc
 .DS_Store

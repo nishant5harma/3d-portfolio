@@ -529,6 +529,10 @@ export default function IndustriesWeServe() {
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [reduced, setReduced] = useState(false);
+  // Drives R3F's `frameloop` so the GL scene only renders when the user
+  // is looking at it. Off-screen we drop to "never" → zero GPU usage.
+  const [frameloop, setFrameloop] =
+    useState<"always" | "never">("never");
 
   // Pointer parallax — scoped to the section so the rest of the page isn't
   // forced to re-render on mouse moves.
@@ -594,6 +598,37 @@ export default function IndustriesWeServe() {
     return () => ctx.revert();
   }, []);
 
+  // Pause R3F render loop when off-screen or tab hidden.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const wrap = wrapRef.current;
+    if (!wrap) return;
+
+    let intersecting = false;
+    let docVisible = !document.hidden;
+    const apply = () =>
+      setFrameloop(intersecting && docVisible ? "always" : "never");
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        intersecting = entry.isIntersecting;
+        apply();
+      },
+      { rootMargin: "200px 0px" },
+    );
+    io.observe(wrap);
+
+    const onVis = () => {
+      docVisible = !document.hidden;
+      apply();
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      io.disconnect();
+      document.removeEventListener("visibilitychange", onVis);
+    };
+  }, []);
+
   const current = INDUSTRIES[activeIndex];
 
   return (
@@ -607,6 +642,7 @@ export default function IndustriesWeServe() {
         <div className={styles.canvas}>
           <Canvas
             dpr={[1, 2]}
+            frameloop={frameloop}
             gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
             camera={{
               position: [0, 0, CAMERA_INITIAL_Z],
